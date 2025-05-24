@@ -111,7 +111,7 @@ class TaskToolWindowFactory : ToolWindowFactory {
                     refresh()
                     val idx = service.tasks.lastIndex
                     if (idx >= 0) {
-                        table.rowSelectionInterval(idx, idx)
+                        table.setRowSelectionInterval(idx, idx)
                     }
                 }
             }

@@ -1,22 +1,25 @@
 package com.github.akhilesh170194.jbplugintasktimer.ui
 
+import com.github.akhilesh170194.jbplugintasktimer.model.Task
 import com.github.akhilesh170194.jbplugintasktimer.model.TaskStatus
 import com.github.akhilesh170194.jbplugintasktimer.services.TaskManagerService
+import com.github.akhilesh170194.jbplugintasktimer.ui.dialog.TaskDialog
 import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.wm.ToolWindow
 import com.intellij.openapi.wm.ToolWindowFactory
+import com.intellij.ui.components.JBLabel
 import com.intellij.ui.components.JBScrollPane
-import com.intellij.ui.components.JBTextField
+import com.intellij.ui.table.JBTable
 import com.intellij.ui.content.ContentFactory
-import javax.swing.JButton
-import javax.swing.JPanel
-import javax.swing.JTable
+import java.awt.BorderLayout
+import java.time.Duration
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
+import javax.swing.*
 import javax.swing.table.DefaultTableModel
+import javax.swing.table.TableCellRenderer
 
-/**
- * Tool window showing the list of tasks.
- */
 class TaskToolWindowFactory : ToolWindowFactory {
     override fun createToolWindowContent(project: Project, toolWindow: ToolWindow) {
         val service = project.service<TaskManagerService>()
@@ -26,247 +29,157 @@ class TaskToolWindowFactory : ToolWindowFactory {
     }
 
     class TaskToolWindow(private val service: TaskManagerService) {
-        val model = DefaultTableModel(arrayOf("Name", "Tag", "Status", "Time", "Start Time", "Stop Time", "Actions"), 0)
-        val table = JTable(model)
-        val nameField = JBTextField(15)
-        val tagField = JBTextField(10)
-        val idleTimeoutField = JBTextField("5", 3)
-        val longTaskField = JBTextField("30", 3)
-        val addButton = JButton("Add")
-        val startButton = JButton("Start")
-        val pauseButton = JButton("Pause")
-        val resumeButton = JButton("Resume")
-        val stopButton = JButton("Stop")
-        val exportCsvButton = JButton("Export CSV")
-        val exportJsonButton = JButton("Export JSON")
-        val editButton = JButton("Edit")
-        val deleteButton = JButton("Delete")
-
-        val mainPanel = JPanel().apply {
-            layout = java.awt.BorderLayout()
-            add(JBScrollPane(table), java.awt.BorderLayout.CENTER)
-
-            // Task creation panel
-            val createPanel = JPanel(java.awt.GridBagLayout())
-            val gbc = java.awt.GridBagConstraints()
-            gbc.insets = java.awt.Insets(2, 2, 2, 2)
-
-            gbc.gridx = 0; gbc.gridy = 0
-            createPanel.add(javax.swing.JLabel("Name:"), gbc)
-            gbc.gridx = 1
-            createPanel.add(nameField, gbc)
-
-            gbc.gridx = 0; gbc.gridy = 1
-            createPanel.add(javax.swing.JLabel("Tag:"), gbc)
-            gbc.gridx = 1
-            createPanel.add(tagField, gbc)
-
-            gbc.gridx = 0; gbc.gridy = 2
-            createPanel.add(javax.swing.JLabel("Idle Timeout (min):"), gbc)
-            gbc.gridx = 1
-            createPanel.add(idleTimeoutField, gbc)
-
-            gbc.gridx = 0; gbc.gridy = 3
-            createPanel.add(javax.swing.JLabel("Long Task Alert (min):"), gbc)
-            gbc.gridx = 1
-            createPanel.add(longTaskField, gbc)
-
-            gbc.gridx = 0; gbc.gridy = 4; gbc.gridwidth = 2
-            createPanel.add(addButton, gbc)
-
-            // Action buttons panel
-            val actionPanel = JPanel()
-            actionPanel.add(startButton)
-            actionPanel.add(pauseButton)
-            actionPanel.add(resumeButton)
-            actionPanel.add(stopButton)
-            actionPanel.add(editButton)
-            actionPanel.add(deleteButton)
-            actionPanel.add(exportCsvButton)
-            actionPanel.add(exportJsonButton)
-
-            // Bottom panel containing both create and action panels
-            val bottom = JPanel(java.awt.BorderLayout())
-            bottom.add(createPanel, java.awt.BorderLayout.WEST)
-            bottom.add(actionPanel, java.awt.BorderLayout.CENTER)
-
-            add(bottom, java.awt.BorderLayout.SOUTH)
+        private val columns = arrayOf(
+            "Name", "Status", "Running Time", "Start Time", "Stop Time", "Tag", "Actions")
+        private val model = object : DefaultTableModel(columns, 0) {
+            override fun isCellEditable(row: Int, column: Int) = false
         }
+        private val table = JBTable(model)
+        private val statusLabel = JBLabel("Total Active Time: 00:00:00")
+        val mainPanel: JPanel
+        private val auditColumns = arrayOf("Time", "Task", "Action", "Details")
+        private val auditModel = object : DefaultTableModel(auditColumns, 0) {
+            override fun isCellEditable(row: Int, column: Int) = false
+        }
+        private val auditTable = JBTable(auditModel)
+        private val timer = javax.swing.Timer(1000) { refreshRunningTimes() }
 
         init {
-            refresh()
-            addButton.addActionListener {
-                val name = nameField.text.trim()
-                val tag = tagField.text.trim()
-                val idleTimeout = idleTimeoutField.text.toLongOrNull()
-                val longTask = longTaskField.text.toLongOrNull()
+            table.columnModel.getColumn(6).cellRenderer = ActionRenderer()
+            table.rowHeight = 28
 
-                if (name.isNotEmpty()) {
-                    service.createTask(name, tag.takeIf { it.isNotEmpty() }, idleTimeout, longTask)
-                    nameField.text = ""
-                    tagField.text = ""
-                    refresh()
-                }
-            }
+            val createButton = JButton("+ Create Task")
+            createButton.addActionListener { openDialog(null) }
+            val top = JPanel(BorderLayout())
+            top.add(createButton, BorderLayout.WEST)
 
-            startButton.addActionListener {
-                selectedTask()?.let {
-                    service.startTask(it)
-                    refresh()
-                }
-            }
+            val bottom = JPanel(BorderLayout())
+            bottom.add(statusLabel, BorderLayout.EAST)
 
-            pauseButton.addActionListener {
-                selectedTask()?.let {
-                    service.pauseTask(it)
-                    refresh()
-                }
-            }
+            val tabs = JTabbedPane()
+            tabs.addTab("Tasks", JBScrollPane(table))
+            tabs.addTab("Audit Logs", JBScrollPane(auditTable))
 
-            resumeButton.addActionListener {
-                selectedTask()?.let {
-                    service.resumeTask(it)
-                    refresh()
-                }
-            }
+            mainPanel = JPanel(BorderLayout())
+            mainPanel.add(top, BorderLayout.NORTH)
+            mainPanel.add(tabs, BorderLayout.CENTER)
+            mainPanel.add(bottom, BorderLayout.SOUTH)
 
-            stopButton.addActionListener {
-                selectedTask()?.let {
-                    service.stopTask(it)
-                    refresh()
-                }
-            }
-
-            editButton.addActionListener {
-                selectedTask()?.let { task ->
-                    // Populate fields with task data
-                    nameField.text = task.name
-                    tagField.text = task.tag ?: ""
-                    idleTimeoutField.text = task.idleTimeoutMinutes?.toString() ?: "5"
-                    longTaskField.text = task.longTaskMinutes?.toString() ?: "30"
-
-                    // Change add button to update
-                    val oldText = addButton.text
-                    addButton.text = "Update"
-
-                    // Store original action listener
-                    val oldActionListeners = addButton.actionListeners
-                    for (listener in oldActionListeners) {
-                        addButton.removeActionListener(listener)
-                    }
-
-                    // Create a dedicated listener for the update action so it can be removed later
-                    var updateListener: java.awt.event.ActionListener? = null
-                    updateListener = java.awt.event.ActionListener {
-                        val name = nameField.text.trim()
-                        val tag = tagField.text.trim()
-                        val idleTimeout = idleTimeoutField.text.toLongOrNull()
-                        val longTask = longTaskField.text.toLongOrNull()
-
-                        if (name.isNotEmpty()) {
-                            task.name = name
-                            task.tag = tag.takeIf { it.isNotEmpty() }
-                            task.idleTimeoutMinutes = idleTimeout
-                            task.longTaskMinutes = longTask
-
-                            // Reset UI
-                            nameField.text = ""
-                            tagField.text = ""
-                            idleTimeoutField.text = "5"
-                            longTaskField.text = "30"
-                            addButton.text = oldText
-
-                            // Restore original action listeners
-                            updateListener?.let { addButton.removeActionListener(it) }
-                            for (listener in oldActionListeners) {
-                                addButton.addActionListener(listener)
-                            }
-
-                            refresh()
-                        }
-                    }
-
-                    updateListener?.let { addButton.addActionListener(it) }
-                }
-            }
-
-            deleteButton.addActionListener {
-                selectedTask()?.let { task ->
-                    val index = service.tasks.indexOf(task)
-                    if (index >= 0) {
-                        service.tasks.removeAt(index)
-                        refresh()
-                    }
-                }
-            }
-
-            exportCsvButton.addActionListener {
-                val fileChooser = javax.swing.JFileChooser()
-                fileChooser.dialogTitle = "Export Tasks to CSV"
-                fileChooser.fileSelectionMode = javax.swing.JFileChooser.FILES_ONLY
-                fileChooser.fileFilter = javax.swing.filechooser.FileNameExtensionFilter("CSV Files", "csv")
-
-                if (fileChooser.showSaveDialog(mainPanel) == javax.swing.JFileChooser.APPROVE_OPTION) {
-                    val file = fileChooser.selectedFile
-                    val filePath = if (!file.name.toLowerCase().endsWith(".csv")) {
-                        java.io.File(file.absolutePath + ".csv")
-                    } else {
-                        file
-                    }
-
-                    val exporter = com.github.akhilesh170194.jbplugintasktimer.export.TaskExporter()
-                    exporter.exportToCsv(service.tasks, filePath)
-                }
-            }
-
-            exportJsonButton.addActionListener {
-                val fileChooser = javax.swing.JFileChooser()
-                fileChooser.dialogTitle = "Export Tasks to JSON"
-                fileChooser.fileSelectionMode = javax.swing.JFileChooser.FILES_ONLY
-                fileChooser.fileFilter = javax.swing.filechooser.FileNameExtensionFilter("JSON Files", "json")
-
-                if (fileChooser.showSaveDialog(mainPanel) == javax.swing.JFileChooser.APPROVE_OPTION) {
-                    val file = fileChooser.selectedFile
-                    val filePath = if (!file.name.toLowerCase().endsWith(".json")) {
-                        java.io.File(file.absolutePath + ".json")
-                    } else {
-                        file
-                    }
-
-                    val exporter = com.github.akhilesh170194.jbplugintasktimer.export.TaskExporter()
-                    exporter.exportToJson(service.tasks, filePath)
-                }
-            }
+            refreshTable()
+            refreshAudit()
+            timer.start()
         }
 
-        private fun selectedTask() =
-            service.tasks.getOrNull(table.selectedRow)
+        private fun openDialog(task: Task?) {
+            val dialog = TaskDialog(task) { name, tag, idle, longTask ->
+                if (task == null) {
+                    service.createTask(name, tag, idle, longTask)
+                } else {
+                    service.updateTask(task, name, tag, idle, longTask)
+                }
+                refreshTable()
+                refreshAudit()
+            }
+            dialog.showAndGet()
+        }
 
-        private fun refresh() {
-            model.setRowCount(0)
-            service.tasks.forEach {
+        private fun refreshTable() {
+            model.rowCount = 0
+            val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
+            service.tasks.forEach { task ->
                 model.addRow(arrayOf(
-                    it.name, 
-                    it.tag ?: "", 
-                    it.status.name, 
-                    formatDuration(it.runningTime),
-                    it.startTime?.let { time -> formatDateTime(time) } ?: "",
-                    it.stopTime?.let { time -> formatDateTime(time) } ?: "",
-                    ""  // Actions column is handled by buttons below the table
+                    task.name,
+                    task.status.name,
+                    formatDuration(task.runningTime),
+                    task.startTime?.format(formatter) ?: "",
+                    task.stopTime?.format(formatter) ?: "",
+                    task.tag ?: "",
+                    task
+                ))
+            }
+            updateTotalTime()
+        }
+
+        private fun refreshRunningTimes() {
+            var row = 0
+            service.tasks.forEach { task ->
+                if (task.status == TaskStatus.RUNNING && task.startTime != null) {
+                    val running = task.runningTime.plus(Duration.between(task.startTime, LocalDateTime.now()))
+                    model.setValueAt(formatDuration(running), row, 2)
+                } else {
+                    model.setValueAt(formatDuration(task.runningTime), row, 2)
+                }
+                row++
+            }
+            updateTotalTime()
+        }
+
+        private fun updateTotalTime() {
+            var total = Duration.ZERO
+            service.tasks.forEach { task ->
+                var duration = task.runningTime
+                if (task.status == TaskStatus.RUNNING && task.startTime != null) {
+                    duration = duration.plus(Duration.between(task.startTime, LocalDateTime.now()))
+                }
+                total = total.plus(duration)
+            }
+            statusLabel.text = "Total Active Time: ${formatDuration(total)}"
+        }
+
+        private fun refreshAudit() {
+            auditModel.rowCount = 0
+            val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
+            service.auditLogs.forEach { log ->
+                val task = service.tasks.find { it.id == log.taskId }?.name ?: log.taskId
+                auditModel.addRow(arrayOf(
+                    log.time.format(formatter),
+                    task,
+                    log.action,
+                    log.details
                 ))
             }
         }
 
-        private fun formatDateTime(dateTime: java.time.LocalDateTime): String {
-            val formatter = java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
-            return dateTime.format(formatter)
+        private fun formatDuration(d: Duration): String {
+            val h = d.toHours()
+            val m = d.toMinutes() % 60
+            val s = d.seconds % 60
+            return String.format("%02d:%02d:%02d", h, m, s)
         }
 
-        private fun formatDuration(d: java.time.Duration): String {
-            val h = d.toHours()
-            val m = (d.toMinutes() % 60)
-            val s = (d.seconds % 60)
-            return String.format("%02d:%02d:%02d", h, m, s)
+        inner class ActionRenderer : TableCellRenderer {
+            override fun getTableCellRendererComponent(
+                table: JTable?, value: Any?, isSelected: Boolean, hasFocus: Boolean, row: Int, column: Int
+            ): java.awt.Component {
+                val task = value as Task
+                val panel = JPanel()
+                panel.isOpaque = false
+                val edit = JButton(com.intellij.icons.AllIcons.Actions.Edit)
+                edit.toolTipText = "Edit Task"
+                edit.addActionListener { openDialog(task) }
+                val delete = JButton(com.intellij.icons.AllIcons.General.Remove)
+                delete.toolTipText = "Delete Task"
+                delete.addActionListener {
+                    service.tasks.remove(task)
+                    refreshTable()
+                    refreshAudit()
+                }
+                val stop = JButton(com.intellij.icons.AllIcons.Actions.Suspend)
+                stop.toolTipText = "Stop Task"
+                stop.addActionListener { service.stopTask(task); refreshTable(); refreshAudit() }
+                val pause = JButton(com.intellij.icons.AllIcons.Actions.Pause)
+                pause.toolTipText = "Pause Task"
+                pause.addActionListener { service.pauseTask(task); refreshTable(); refreshAudit() }
+                val resume = JButton(com.intellij.icons.AllIcons.Actions.Resume)
+                resume.toolTipText = "Resume Task"
+                resume.addActionListener { service.resumeTask(task); refreshTable(); refreshAudit() }
+                panel.add(edit)
+                panel.add(delete)
+                panel.add(stop)
+                panel.add(pause)
+                panel.add(resume)
+                return panel
+            }
         }
     }
 }

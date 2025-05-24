@@ -1,8 +1,6 @@
 package com.github.akhilesh170194.jbplugintasktimer.services
 
-import com.github.akhilesh170194.jbplugintasktimer.model.Task
-import com.github.akhilesh170194.jbplugintasktimer.model.TaskSession
-import com.github.akhilesh170194.jbplugintasktimer.model.TaskStatus
+import com.github.akhilesh170194.jbplugintasktimer.model.*
 import com.intellij.openapi.components.PersistentStateComponent
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.State
@@ -23,7 +21,8 @@ import java.time.LocalDateTime
 class TaskManagerService(private val project: Project) : PersistentStateComponent<TaskManagerService.State> {
 
     data class State(
-        var tasks: MutableList<Task> = mutableListOf()
+        var tasks: MutableList<Task> = mutableListOf(),
+        var auditLogs: MutableList<AuditLogEntry> = mutableListOf()
     )
 
     private var myState = State()
@@ -37,9 +36,17 @@ class TaskManagerService(private val project: Project) : PersistentStateComponen
     val tasks: MutableList<Task>
         get() = myState.tasks
 
+    val auditLogs: MutableList<AuditLogEntry>
+        get() = myState.auditLogs
+
+    private fun logChange(task: Task, action: String, details: String) {
+        auditLogs.add(AuditLogEntry(taskId = task.id, action = action, details = details))
+    }
+
     fun createTask(name: String, tag: String?, idle: Long?, longTask: Long?): Task {
         val task = Task(name = name, tag = tag, idleTimeoutMinutes = idle, longTaskMinutes = longTask)
         tasks.add(task)
+        logChange(task, "Created", "name=$name tag=${tag ?: ""}")
         return task
     }
 
@@ -48,6 +55,7 @@ class TaskManagerService(private val project: Project) : PersistentStateComponen
         task.startTime = LocalDateTime.now()
         task.status = TaskStatus.RUNNING
         task.sessions.add(TaskSession(start = task.startTime!!))
+        logChange(task, "Started", "")
     }
 
     fun pauseTask(task: Task) {
@@ -57,6 +65,7 @@ class TaskManagerService(private val project: Project) : PersistentStateComponen
         session?.end = now
         task.runningTime = task.runningTime.plus(Duration.between(task.startTime, now))
         task.status = TaskStatus.PAUSED
+        logChange(task, "Paused", "")
     }
 
     fun resumeTask(task: Task) {
@@ -64,6 +73,7 @@ class TaskManagerService(private val project: Project) : PersistentStateComponen
         task.startTime = LocalDateTime.now()
         task.status = TaskStatus.RUNNING
         task.sessions.add(TaskSession(start = task.startTime!!))
+        logChange(task, "Resumed", "")
     }
 
     fun stopTask(task: Task) {
@@ -75,6 +85,30 @@ class TaskManagerService(private val project: Project) : PersistentStateComponen
         }
         task.stopTime = now
         task.status = TaskStatus.STOPPED
+        logChange(task, "Stopped", "")
+    }
+
+    fun updateTask(task: Task, name: String, tag: String?, idle: Long?, longTask: Long?) {
+        val changes = mutableListOf<String>()
+        if (task.name != name) {
+            changes.add("name: '${task.name}' -> '$name'")
+            task.name = name
+        }
+        if (task.tag != tag) {
+            changes.add("tag: '${task.tag ?: ""}' -> '${tag ?: ""}'")
+            task.tag = tag
+        }
+        if (task.idleTimeoutMinutes != idle) {
+            changes.add("idleTimeout: ${task.idleTimeoutMinutes} -> $idle")
+            task.idleTimeoutMinutes = idle
+        }
+        if (task.longTaskMinutes != longTask) {
+            changes.add("longTask: ${task.longTaskMinutes} -> $longTask")
+            task.longTaskMinutes = longTask
+        }
+        if (changes.isNotEmpty()) {
+            logChange(task, "Updated", changes.joinToString(", "))
+        }
     }
 
     /**
@@ -82,7 +116,7 @@ class TaskManagerService(private val project: Project) : PersistentStateComponen
      */
     fun exportToCsv(path: Path) {
         path.toFile().bufferedWriter().use { writer ->
-            writer.appendLine("id,name,tag,status,runningTime,startTime,stopTime,pauseResumeCount")
+            writer.appendLine("id,name,tag,status,runningTime,startTime,stopTime")
             tasks.forEach { task ->
                 writer.appendLine(
                     listOf(
@@ -92,8 +126,7 @@ class TaskManagerService(private val project: Project) : PersistentStateComponen
                         task.status.name,
                         task.runningTime.toMillis().toString(),
                         task.startTime?.toString() ?: "",
-                        task.stopTime?.toString() ?: "",
-                        (task.sessions.size - 1).toString()
+                        task.stopTime?.toString() ?: ""
                     ).joinToString(",")
                 )
             }
@@ -114,8 +147,7 @@ class TaskManagerService(private val project: Project) : PersistentStateComponen
                     append("\"status\":\"").append(task.status.name).append("\",")
                     append("\"runningTime\":").append(task.runningTime.toMillis()).append(",")
                     append("\"startTime\":\"").append(task.startTime?.toString() ?: "").append("\",")
-                    append("\"stopTime\":\"").append(task.stopTime?.toString() ?: "").append("\",")
-                    append("\"pauseResumeCount\":").append(task.sessions.size - 1)
+                    append("\"stopTime\":\"").append(task.stopTime?.toString() ?: "").append("\"")
                     append("}")
                 }
             }

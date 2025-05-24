@@ -93,8 +93,11 @@ class TaskToolWindowFactory : ToolWindowFactory {
             add(bottom, java.awt.BorderLayout.SOUTH)
         }
 
+        private val refreshTimer = javax.swing.Timer(1000) { refresh() }
+
         init {
             refresh()
+            refreshTimer.start()
             addButton.addActionListener {
                 val name = nameField.text.trim()
                 val tag = tagField.text.trim()
@@ -106,6 +109,10 @@ class TaskToolWindowFactory : ToolWindowFactory {
                     nameField.text = ""
                     tagField.text = ""
                     refresh()
+                    val idx = service.tasks.lastIndex
+                    if (idx >= 0) {
+                        table.rowSelectionInterval(idx, idx)
+                    }
                 }
             }
 
@@ -245,11 +252,17 @@ class TaskToolWindowFactory : ToolWindowFactory {
         private fun refresh() {
             model.setRowCount(0)
             service.tasks.forEach {
+                val elapsed = if (it.status == TaskStatus.RUNNING && it.startTime != null) {
+                    it.runningTime.plus(java.time.Duration.between(it.startTime, java.time.LocalDateTime.now()))
+                } else {
+                    it.runningTime
+                }
+
                 model.addRow(arrayOf(
-                    it.name, 
-                    it.tag ?: "", 
-                    it.status.name, 
-                    formatDuration(it.runningTime),
+                    it.name,
+                    it.tag ?: "",
+                    it.status.name,
+                    formatDuration(elapsed),
                     it.startTime?.let { time -> formatDateTime(time) } ?: "",
                     it.stopTime?.let { time -> formatDateTime(time) } ?: "",
                     ""  // Actions column is handled by buttons below the table

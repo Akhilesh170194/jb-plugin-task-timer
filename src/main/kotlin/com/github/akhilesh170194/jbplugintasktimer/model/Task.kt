@@ -8,7 +8,7 @@ import java.time.LocalDateTime
  */
 data class Task(
     var id: String = java.util.UUID.randomUUID().toString(),
-    var name: String,
+    var name: String = "",
     var tag: String? = null,
     var created: LocalDateTime = LocalDateTime.now(),
     var status: TaskStatus = TaskStatus.STOPPED,

@@ -155,8 +155,8 @@ class TaskToolWindowFactory : ToolWindowFactory {
                         addButton.removeActionListener(listener)
                     }
 
-                    // Add new action listener for update
-                    addButton.addActionListener {
+                    // Create a dedicated listener for the update action so it can be removed later
+                    val updateListener = java.awt.event.ActionListener {
                         val name = nameField.text.trim()
                         val tag = tagField.text.trim()
                         val idleTimeout = idleTimeoutField.text.toLongOrNull()
@@ -176,7 +176,7 @@ class TaskToolWindowFactory : ToolWindowFactory {
                             addButton.text = oldText
 
                             // Restore original action listeners
-                            addButton.removeActionListener(it.source as java.awt.event.ActionListener)
+                            addButton.removeActionListener(updateListener)
                             for (listener in oldActionListeners) {
                                 addButton.addActionListener(listener)
                             }
@@ -184,6 +184,8 @@ class TaskToolWindowFactory : ToolWindowFactory {
                             refresh()
                         }
                     }
+
+                    addButton.addActionListener(updateListener)
                 }
             }
 

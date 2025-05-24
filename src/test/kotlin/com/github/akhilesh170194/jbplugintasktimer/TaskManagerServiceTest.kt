@@ -31,4 +31,21 @@ class TaskManagerServiceTest : BasePlatformTestCase() {
         assertEquals(2, task.sessions.size)
         assertTrue(task.sessions.all { it.end != null })
     }
+
+    fun testExportFunctions() {
+        val service = project.service<TaskManagerService>()
+        val task = service.createTask("export", null, null, null)
+        service.startTask(task)
+        service.stopTask(task)
+
+        val csv = java.nio.file.Files.createTempFile("tasks", ".csv")
+        val json = java.nio.file.Files.createTempFile("tasks", ".json")
+
+        service.exportToCsv(csv)
+        service.exportToJson(json)
+
+        assertTrue(java.nio.file.Files.readAllLines(csv).size > 1)
+        val jsonContent = java.nio.file.Files.readString(json)
+        assertTrue(jsonContent.startsWith("["))
+    }
 }

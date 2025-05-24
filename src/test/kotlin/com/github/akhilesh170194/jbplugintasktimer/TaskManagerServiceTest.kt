@@ -9,9 +9,7 @@ import org.junit.jupiter.api.Test
 class TaskManagerServiceTest {
 
     private fun createService(): TaskManagerService {
-        @Suppress("UNCHECKED_CAST")
-        val project = null as Project
-        return TaskManagerService(project)
+        return TaskManagerService(null)
     }
     @Test
     fun testTaskLifecycle() {

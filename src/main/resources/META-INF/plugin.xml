@@ -9,7 +9,6 @@
     <resource-bundle>messages.MyBundle</resource-bundle>
 
     <extensions defaultExtensionNs="com.intellij">
-        <toolWindow factoryClass="com.github.akhilesh170194.jbplugintasktimer.toolWindow.MyToolWindowFactory" id="MyToolWindow"/>
-        <postStartupActivity implementation="com.github.akhilesh170194.jbplugintasktimer.startup.MyProjectActivity" />
+        <toolWindow factoryClass="com.github.akhilesh170194.jbplugintasktimer.ui.TaskToolWindowFactory" id="TaskTimer" anchor="bottom"/>
     </extensions>
 </idea-plugin>

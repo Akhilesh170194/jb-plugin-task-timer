@@ -30,7 +30,7 @@ class TaskToolWindowFactory : ToolWindowFactory {
 
     class TaskToolWindow(private val service: TaskManagerService) {
         private val columns = arrayOf(
-            "Name", "Status", "Running Time", "Start Time", "Stop Time", "Pause Count", "Resume Count", "Tag", "Actions")
+            "Name", "Status", "Running Time", "Start Time", "Stop Time", "Tag", "Actions")
         private val model = object : DefaultTableModel(columns, 0) {
             override fun isCellEditable(row: Int, column: Int) = false
         }
@@ -140,27 +140,11 @@ class TaskToolWindowFactory : ToolWindowFactory {
                     formatDuration(task.runningTime),
                     task.startTime?.format(formatter) ?: "",
                     task.stopTime?.format(formatter) ?: "",
-                    task.pauseCount,
-                    task.resumeCount,
                     task.tag ?: "",
                     task
                 ))
             }
             updateTotalTime()
-        }
-
-        private fun refreshAudit() {
-            auditModel.rowCount = 0
-            val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
-            service.auditLogs.forEach { log ->
-                val taskName = service.tasks.find { it.id == log.taskId }?.name ?: log.taskId
-                auditModel.addRow(arrayOf(
-                    log.time.format(formatter),
-                    taskName,
-                    log.action,
-                    log.details
-                ))
-            }
         }
 
         private fun refreshRunningTimes() {
@@ -177,26 +161,29 @@ class TaskToolWindowFactory : ToolWindowFactory {
             updateTotalTime()
         }
 
-        private fun selectedTask() =
-            service.tasks.getOrNull(table.selectedRow)
-
-        private fun refresh() {
-            model.setRowCount(0)
-            service.tasks.forEach {
-                val elapsed = if (it.status == TaskStatus.RUNNING && it.startTime != null) {
-                    it.runningTime.plus(java.time.Duration.between(it.startTime, java.time.LocalDateTime.now()))
-                } else {
-                    it.runningTime
+        private fun updateTotalTime() {
+            var total = Duration.ZERO
+            service.tasks.forEach { task ->
+                var duration = task.runningTime
+                if (task.status == TaskStatus.RUNNING && task.startTime != null) {
+                    duration = duration.plus(Duration.between(task.startTime, LocalDateTime.now()))
                 }
+                total = total.plus(duration)
+            }
+            statusLabel.text = "Total Active Time: ${formatDuration(total)}"
+        }
 
-                model.addRow(arrayOf(
-                    it.name,
-                    it.tag ?: "",
-                    it.status.name,
-                    formatDuration(elapsed),
-                    it.startTime?.let { time -> formatDateTime(time) } ?: "",
-                    it.stopTime?.let { time -> formatDateTime(time) } ?: "",
-                    ""  // Actions column is handled by buttons below the table
+        private fun refreshAudit() {
+            auditModel.rowCount = 0
+            val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
+            service.auditLogs.forEach { log ->
+                val task = service.tasks.find { it.id == log.taskId }?.name ?: log.taskId
+                auditModel.addRow(arrayOf(
+                    log.time.format(formatter),
+                    task,
+                    log.action,
+                    log.details
+                ))
             }
             statusLabel.text = "Total Active Time: ${formatDuration(total)}"
         }

@@ -3,11 +3,11 @@ package com.github.akhilesh170194.jbplugintasktimer.model
 import java.time.LocalDateTime
 
 /**
- * Represents an audit log entry recording a task action.
+ * Represents a single audit log entry for task changes.
  */
 data class AuditLogEntry(
+    var time: LocalDateTime = LocalDateTime.now(),
     var taskId: String = "",
     var action: String = "",
-    var time: LocalDateTime = LocalDateTime.now(),
     var details: String = ""
 )

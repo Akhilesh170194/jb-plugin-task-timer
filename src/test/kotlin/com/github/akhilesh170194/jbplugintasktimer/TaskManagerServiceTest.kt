@@ -38,14 +38,28 @@ class TaskManagerServiceTest : BasePlatformTestCase() {
         service.startTask(task)
         service.stopTask(task)
 
-        val csv = java.nio.file.Files.createTempFile("tasks", ".csv")
-        val json = java.nio.file.Files.createTempFile("tasks", ".json")
+        val csv = java.nio.file.Files.createTempFile("tasks", ".csv").toFile()
+        val json = java.nio.file.Files.createTempFile("tasks", ".json").toFile()
 
-        service.exportToCsv(csv)
-        service.exportToJson(json)
+        val exporter = com.github.akhilesh170194.jbplugintasktimer.export.TaskExporter()
+        exporter.exportToCsv(service.tasks, csv)
+        exporter.exportToJson(service.tasks, json)
 
-        assertTrue(java.nio.file.Files.readAllLines(csv).size > 1)
-        val jsonContent = java.nio.file.Files.readString(json)
+        assertTrue(csv.readLines().size > 1)
+        val jsonContent = json.readText()
         assertTrue(jsonContent.startsWith("["))
+    }
+
+    fun testTaskWithOverrides() {
+        val service = project.service<TaskManagerService>()
+        val idleTimeout = 10L
+        val longTask = 60L
+
+        val task = service.createTask("task with overrides", "test", idleTimeout, longTask)
+
+        assertEquals("task with overrides", task.name)
+        assertEquals("test", task.tag)
+        assertEquals(idleTimeout, task.idleTimeoutMinutes)
+        assertEquals(longTask, task.longTaskMinutes)
     }
 }

@@ -1,7 +1,7 @@
 <!-- Plugin Configuration File. Read more: https://plugins.jetbrains.com/docs/intellij/plugin-configuration-file.html -->
 <idea-plugin>
     <id>com.github.akhilesh170194.jbplugintasktimer</id>
-    <name>jb-plugin-task-timer</name>
+    <name>Task Timer</name>
     <vendor>akhilesh170194</vendor>
 
     <depends>com.intellij.modules.platform</depends>
@@ -10,5 +10,13 @@
 
     <extensions defaultExtensionNs="com.intellij">
         <toolWindow factoryClass="com.github.akhilesh170194.jbplugintasktimer.ui.TaskToolWindowFactory" id="TaskTimer" anchor="bottom"/>
+        <applicationService serviceImplementation="com.github.akhilesh170194.jbplugintasktimer.settings.TaskTimerSettings"/>
+        <applicationConfigurable parentId="tools" instance="com.github.akhilesh170194.jbplugintasktimer.settings.TaskTimerSettingsConfigurable"
+                             id="com.github.akhilesh170194.jbplugintasktimer.settings.TaskTimerSettingsConfigurable"
+                             displayName="Task Timer" bundle="messages.MyBundle" key="task.timer.toolwindow"/>
+        <statusBarWidgetFactory id="Status Bar Widget Factory" implementation="com.github.akhilesh170194.jbplugintasktimer.ui.TaskTimerStatusBarWidgetFactory"/>
+        <notificationGroup id="Task Timer Notifications" displayType="BALLOON" bundle="messages.MyBundle"
+                           key="notification.group.task.timer.notifications"/>
+        <postStartupActivity implementation="com.github.akhilesh170194.jbplugintasktimer.startup.TaskTimerStartupActivity"/>
     </extensions>
 </idea-plugin>

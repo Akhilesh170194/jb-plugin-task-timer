@@ -17,5 +17,7 @@ data class Task(
     var stopTime: LocalDateTime? = null,
     var idleTimeoutMinutes: Long? = null,
     var longTaskMinutes: Long? = null,
+    var pauseCount: Int = 0,
+    var resumeCount: Int = 0,
     val sessions: MutableList<TaskSession> = mutableListOf()
 )

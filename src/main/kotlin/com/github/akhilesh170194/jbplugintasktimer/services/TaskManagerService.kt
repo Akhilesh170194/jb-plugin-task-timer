@@ -1,14 +1,14 @@
 package com.github.akhilesh170194.jbplugintasktimer.services
 
-import com.github.akhilesh170194.jbplugintasktimer.model.*
+import com.github.akhilesh170194.jbplugintasktimer.model.AuditLogEntry
+import com.github.akhilesh170194.jbplugintasktimer.model.Task
+import com.github.akhilesh170194.jbplugintasktimer.model.TaskSession
+import com.github.akhilesh170194.jbplugintasktimer.model.TaskStatus
 import com.intellij.openapi.components.PersistentStateComponent
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.State
 import com.intellij.openapi.components.Storage
 import com.intellij.openapi.project.Project
-import com.intellij.util.xmlb.XmlSerializerUtil
-import java.io.BufferedWriter
-import java.io.File
 import java.nio.file.Path
 import java.time.Duration
 import java.time.LocalDateTime
@@ -48,15 +48,6 @@ class TaskManagerService(private val project: Project) : PersistentStateComponen
         tasks.add(task)
         logChange(task, "Created", "name=$name tag=${tag ?: ""}")
         return task
-    }
-
-    fun updateTask(task: Task, name: String, tag: String?, idle: Long?, longTask: Long?) {
-        val changes = mutableListOf<String>()
-        if (task.name != name) { changes.add("name: ${task.name} -> $name"); task.name = name }
-        if (task.tag != tag) { changes.add("tag: ${task.tag ?: ""} -> ${tag ?: ""}"); task.tag = tag }
-        if (task.idleTimeoutMinutes != idle) { changes.add("idle: ${task.idleTimeoutMinutes} -> $idle"); task.idleTimeoutMinutes = idle }
-        if (task.longTaskMinutes != longTask) { changes.add("longTask: ${task.longTaskMinutes} -> $longTask"); task.longTaskMinutes = longTask }
-        log(task, "Updated", changes.joinToString("; "))
     }
 
     fun startTask(task: Task) {
@@ -152,7 +143,7 @@ class TaskManagerService(private val project: Project) : PersistentStateComponen
                 buildString {
                     append("{")
                     append("\"id\":\"").append(task.id).append("\",")
-                    append("\"name\":\"").append(task.name.replace("\"", "'" )).append("\",")
+                    append("\"name\":\"").append(task.name.replace("\"", "'")).append("\",")
                     append("\"tag\":\"").append(task.tag ?: "").append("\",")
                     append("\"status\":\"").append(task.status.name).append("\",")
                     append("\"runningTime\":").append(task.runningTime.toMillis()).append(",")

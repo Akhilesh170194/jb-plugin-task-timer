@@ -7,12 +7,9 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.wm.StatusBar
 import com.intellij.openapi.wm.StatusBarWidget
 import com.intellij.openapi.wm.StatusBarWidgetFactory
-import java.awt.event.MouseEvent
 import java.time.Duration
 import java.time.LocalDateTime
-import java.util.Timer
-import java.util.TimerTask
-import javax.swing.Icon
+import java.util.*
 
 /**
  * Status bar widget showing total running time of active tasks.

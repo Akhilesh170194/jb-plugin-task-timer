@@ -2,7 +2,9 @@
 
 ## Overview
 
-This JetBrains IDE plugin helps developers track time spent on tasks per project. It supports task creation, timer management, automatic pausing/resuming based on IDE activity, persistent task history, and various export/configuration options.
+This JetBrains IDE plugin helps developers track time spent on tasks per project. It supports task creation, timer
+management, automatic pausing/resuming based on IDE activity, persistent task history, and various export/configuration
+options.
 
 ---
 
@@ -108,17 +110,20 @@ Accessible under: `Preferences / Settings → Tools -> Task Timer`
 
 ## Detailed Explanation of the Task Feature
 
-The core purpose of this plugin is to help developers stay aware of how much time they spend on specific tasks while working within JetBrains IDEs (e.g., IntelliJ IDEA, PyCharm, WebStorm). This is particularly useful for:
+The core purpose of this plugin is to help developers stay aware of how much time they spend on specific tasks while
+working within JetBrains IDEs (e.g., IntelliJ IDEA, PyCharm, WebStorm). This is particularly useful for:
 
 - Personal productivity tracking
 - Time logging for client work or agile task boards
 - Reducing task context switching and increasing focus
 
-Each **Task** represents a single unit of work. The user can start, pause, resume, or stop a task's timer manually. Additionally, the timer integrates with IDE activity to automate this behavior.
+Each **Task** represents a single unit of work. The user can start, pause, resume, or stop a task's timer manually.
+Additionally, the timer integrates with IDE activity to automate this behavior.
 
 ### Task Lifecycle
 
-1. **Create Task**: User gives a name (e.g., "Fix login bug"), optionally tags it (e.g., "Bug", "Urgent"), and can override timing configurations if needed.
+1. **Create Task**: User gives a name (e.g., "Fix login bug"), optionally tags it (e.g., "Bug", "Urgent"), and can
+   override timing configurations if needed.
 2. **Start Timer**: Timer starts counting time. This is shown in the UI and the status bar.
 3. **Pause/Resume**: Can be done manually or automatically via IDE activity detection.
 4. **Stop Task**: Marks the task as inactive, locking its state.

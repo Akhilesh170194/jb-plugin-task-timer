@@ -10,13 +10,16 @@ import com.intellij.openapi.wm.ToolWindow
 import com.intellij.openapi.wm.ToolWindowFactory
 import com.intellij.ui.components.JBLabel
 import com.intellij.ui.components.JBScrollPane
-import com.intellij.ui.table.JBTable
 import com.intellij.ui.content.ContentFactory
+import com.intellij.ui.table.JBTable
 import java.awt.BorderLayout
 import java.time.Duration
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
-import javax.swing.*
+import javax.swing.JButton
+import javax.swing.JPanel
+import javax.swing.JTabbedPane
+import javax.swing.JTable
 import javax.swing.table.DefaultTableModel
 import javax.swing.table.TableCellRenderer
 
@@ -30,7 +33,8 @@ class TaskToolWindowFactory : ToolWindowFactory {
 
     class TaskToolWindow(private val service: TaskManagerService) {
         private val columns = arrayOf(
-            "Name", "Status", "Running Time", "Start Time", "Stop Time", "Tag", "Actions")
+            "Name", "Status", "Running Time", "Start Time", "Stop Time", "Tag", "Actions"
+        )
         private val model = object : DefaultTableModel(columns, 0) {
             override fun isCellEditable(row: Int, column: Int) = false
         }
@@ -90,15 +94,17 @@ class TaskToolWindowFactory : ToolWindowFactory {
             model.rowCount = 0
             val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
             service.tasks.forEach { task ->
-                model.addRow(arrayOf(
-                    task.name,
-                    task.status.name,
-                    formatDuration(task.runningTime),
-                    task.startTime?.format(formatter) ?: "",
-                    task.stopTime?.format(formatter) ?: "",
-                    task.tag ?: "",
-                    task
-                ))
+                model.addRow(
+                    arrayOf(
+                        task.name,
+                        task.status.name,
+                        formatDuration(task.runningTime),
+                        task.startTime?.format(formatter) ?: "",
+                        task.stopTime?.format(formatter) ?: "",
+                        task.tag ?: "",
+                        task
+                    )
+                )
             }
             updateTotalTime()
         }
@@ -134,12 +140,14 @@ class TaskToolWindowFactory : ToolWindowFactory {
             val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
             service.auditLogs.forEach { log ->
                 val task = service.tasks.find { it.id == log.taskId }?.name ?: log.taskId
-                auditModel.addRow(arrayOf(
-                    log.time.format(formatter),
-                    task,
-                    log.action,
-                    log.details
-                ))
+                auditModel.addRow(
+                    arrayOf(
+                        log.time.format(formatter),
+                        task,
+                        log.action,
+                        log.details
+                    )
+                )
             }
             updateTotalTime()
         }

@@ -2,9 +2,9 @@ package com.github.akhilesh170194.jbplugintasktimer.ui.dialog
 
 import com.github.akhilesh170194.jbplugintasktimer.model.Task
 import com.intellij.openapi.ui.DialogWrapper
-import com.intellij.ui.layout.panel
 import com.intellij.ui.components.JBCheckBox
 import com.intellij.ui.components.JBTextField
+import com.intellij.ui.dsl.builder.panel
 import javax.swing.JComponent
 import javax.swing.JSpinner
 import javax.swing.SpinnerNumberModel
@@ -12,7 +12,10 @@ import javax.swing.SpinnerNumberModel
 /**
  * Dialog for creating or editing a task.
  */
-class TaskDialog(private val task: Task?, private val onOk: (name: String, tag: String?, idle: Long?, longTask: Long?) -> Unit) : DialogWrapper(true) {
+class TaskDialog(
+    private val task: Task?,
+    private val onOk: (name: String, tag: String?, idle: Long?, longTask: Long?) -> Unit
+) : DialogWrapper(true) {
     private val nameField = JBTextField(task?.name ?: "")
     private val tagField = JBTextField(task?.tag ?: "")
     private val overrideBox = JBCheckBox("Override Global Settings")
@@ -34,11 +37,21 @@ class TaskDialog(private val task: Task?, private val onOk: (name: String, tag: 
     }
 
     override fun createCenterPanel(): JComponent = panel {
-        row("Task Name:") { nameField() }
-        row("Tag:") { tagField() }
-        row { overrideBox() }
-        row("Idle Timeout (min):") { idleField() }
-        row("Long Task Alert (min):") { longTaskField() }
+        row("Task Name:") {
+            cell(nameField)
+        }
+        row("Tag:") {
+            cell(tagField)
+        }
+        row {
+            cell(overrideBox)
+        }
+        row("Idle Timeout (min):") {
+            cell(idleField)
+        }
+        row("Long Task Alert (min):") {
+            cell(longTaskField)
+        }
     }
 
     override fun doOKAction() {

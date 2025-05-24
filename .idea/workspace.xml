@@ -5,12 +5,24 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="3dd4ced8-eb52-4def-8b09-7b3a4534d407" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/gradle.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/gradle.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.github/workflows/build.yml" beforeDir="false" afterPath="$PROJECT_DIR$/.github/workflows/build.yml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.github/workflows/release.yml" beforeDir="false" afterPath="$PROJECT_DIR$/.github/workflows/release.yml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.run/Run Plugin.run.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.run/Run Plugin.run.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.run/Run Tests.run.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.run/Run Tests.run.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.run/Run Verifications.run.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.run/Run Verifications.run.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/CHANGELOG.md" beforeDir="false" afterPath="$PROJECT_DIR$/CHANGELOG.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/build.gradle.kts" beforeDir="false" afterPath="$PROJECT_DIR$/build.gradle.kts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/gradle.properties" beforeDir="false" afterPath="$PROJECT_DIR$/gradle.properties" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/requirements.md" beforeDir="false" afterPath="$PROJECT_DIR$/requirements.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/kotlin/com/github/akhilesh170194/jbplugintasktimer/listeners/ActivityListener.kt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/kotlin/com/github/akhilesh170194/jbplugintasktimer/listeners/ActivityListener.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/kotlin/com/github/akhilesh170194/jbplugintasktimer/services/TaskManagerService.kt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/kotlin/com/github/akhilesh170194/jbplugintasktimer/services/TaskManagerService.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/kotlin/com/github/akhilesh170194/jbplugintasktimer/settings/TaskTimerSettingsConfigurable.kt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/kotlin/com/github/akhilesh170194/jbplugintasktimer/settings/TaskTimerSettingsConfigurable.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/kotlin/com/github/akhilesh170194/jbplugintasktimer/ui/TaskTimerStatusBarWidget.kt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/kotlin/com/github/akhilesh170194/jbplugintasktimer/ui/TaskTimerStatusBarWidget.kt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/kotlin/com/github/akhilesh170194/jbplugintasktimer/ui/TaskToolWindowFactory.kt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/kotlin/com/github/akhilesh170194/jbplugintasktimer/ui/TaskToolWindowFactory.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/kotlin/com/github/akhilesh170194/jbplugintasktimer/ui/dialog/TaskDialog.kt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/kotlin/com/github/akhilesh170194/jbplugintasktimer/ui/dialog/TaskDialog.kt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/resources/META-INF/plugin.xml" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/META-INF/plugin.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/resources/messages/MyBundle.properties" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/messages/MyBundle.properties" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/test/kotlin/com/github/akhilesh170194/jbplugintasktimer/TaskManagerServiceTest.kt" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/kotlin/com/github/akhilesh170194/jbplugintasktimer/TaskManagerServiceTest.kt" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -20,6 +32,9 @@
   <component name="ExternalProjectsManager">
     <system id="GRADLE">
       <state>
+        <task path="$PROJECT_DIR$">
+          <activation />
+        </task>
         <projects_view>
           <tree_state>
             <expand />
@@ -37,6 +52,10 @@
     </option>
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
+  <component name="KubernetesApiPersistence"><![CDATA[{}]]></component>
+  <component name="KubernetesApiProvider"><![CDATA[{
+  "isMigrated": true
+}]]></component>
   <component name="LogFilters">
     <option name="FILTER_ERRORS" value="false" />
     <option name="FILTER_WARNINGS" value="false" />
@@ -44,9 +63,9 @@
     <option name="FILTER_DEBUG" value="true" />
     <option name="CUSTOM_FILTER" />
   </component>
-  <component name="ProjectColorInfo"><![CDATA[{
-  "associatedIndex": 4
-}]]></component>
+  <component name="ProjectColorInfo">{
+  &quot;associatedIndex&quot;: 4
+}</component>
   <component name="ProjectId" id="2xXIm8ESNlYWdUrFeKOr9UqNc44" />
   <component name="ProjectViewState">
     <option name="hideEmptyMiddlePackages" value="true" />
@@ -55,6 +74,7 @@
   <component name="PropertiesComponent"><![CDATA[{
   "keyToString": {
     "Gradle.Build Plugin.executor": "Run",
+    "Gradle.Build jb-plugin-task-timer.executor": "Run",
     "Gradle.Run Plugin.executor": "Run",
     "Gradle.TaskManagerServiceTest.executor": "Run",
     "ModuleVcsDetector.initialDetectionPerformed": "true",

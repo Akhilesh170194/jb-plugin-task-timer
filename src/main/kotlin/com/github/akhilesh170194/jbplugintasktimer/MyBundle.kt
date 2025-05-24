@@ -1,4 +1,4 @@
-package org.jetbrains.plugins.template
+package com.github.akhilesh170194.jbplugintasktimer
 
 import com.intellij.DynamicBundle
 import org.jetbrains.annotations.NonNls

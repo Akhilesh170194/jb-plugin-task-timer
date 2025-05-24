@@ -50,6 +50,15 @@ class TaskManagerService(private val project: Project) : PersistentStateComponen
         return task
     }
 
+    fun updateTask(task: Task, name: String, tag: String?, idle: Long?, longTask: Long?) {
+        val changes = mutableListOf<String>()
+        if (task.name != name) { changes.add("name: ${task.name} -> $name"); task.name = name }
+        if (task.tag != tag) { changes.add("tag: ${task.tag ?: ""} -> ${tag ?: ""}"); task.tag = tag }
+        if (task.idleTimeoutMinutes != idle) { changes.add("idle: ${task.idleTimeoutMinutes} -> $idle"); task.idleTimeoutMinutes = idle }
+        if (task.longTaskMinutes != longTask) { changes.add("longTask: ${task.longTaskMinutes} -> $longTask"); task.longTaskMinutes = longTask }
+        log(task, "Updated", changes.joinToString("; "))
+    }
+
     fun startTask(task: Task) {
         if (task.status == TaskStatus.RUNNING) return
         task.startTime = LocalDateTime.now()
@@ -64,6 +73,7 @@ class TaskManagerService(private val project: Project) : PersistentStateComponen
         val session = task.sessions.lastOrNull()
         session?.end = now
         task.runningTime = task.runningTime.plus(Duration.between(task.startTime, now))
+        task.pauseCount += 1
         task.status = TaskStatus.PAUSED
         logChange(task, "Paused", "")
     }

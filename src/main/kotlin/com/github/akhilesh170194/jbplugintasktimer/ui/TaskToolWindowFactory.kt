@@ -44,9 +44,56 @@ class TaskToolWindowFactory : ToolWindowFactory {
         private val auditTable = JBTable(auditModel)
         private val timer = javax.swing.Timer(1000) { refreshRunningTimes() }
 
+        private val refreshTimer = javax.swing.Timer(1000) { refresh() }
+
         init {
-            table.columnModel.getColumn(8).cellRenderer = ActionRenderer()
-            table.rowHeight = 28
+            refresh()
+            refreshTimer.start()
+            addButton.addActionListener {
+                val name = nameField.text.trim()
+                val tag = tagField.text.trim()
+                val idleTimeout = idleTimeoutField.text.toLongOrNull()
+                val longTask = longTaskField.text.toLongOrNull()
+
+                if (name.isNotEmpty()) {
+                    service.createTask(name, tag.takeIf { it.isNotEmpty() }, idleTimeout, longTask)
+                    nameField.text = ""
+                    tagField.text = ""
+                    refresh()
+                    val idx = service.tasks.lastIndex
+                    if (idx >= 0) {
+                        table.setRowSelectionInterval(idx, idx)
+                    }
+                }
+            }
+
+            startButton.addActionListener {
+                selectedTask()?.let {
+                    service.startTask(it)
+                    refresh()
+                }
+            }
+
+            pauseButton.addActionListener {
+                selectedTask()?.let {
+                    service.pauseTask(it)
+                    refresh()
+                }
+            }
+
+            resumeButton.addActionListener {
+                selectedTask()?.let {
+                    service.resumeTask(it)
+                    refresh()
+                }
+            }
+
+            stopButton.addActionListener {
+                selectedTask()?.let {
+                    service.stopTask(it)
+                    refresh()
+                }
+            }
 
             val createButton = JButton("+ Create Task")
             createButton.addActionListener { openDialog(null) }
@@ -130,14 +177,26 @@ class TaskToolWindowFactory : ToolWindowFactory {
             updateTotalTime()
         }
 
-        private fun updateTotalTime() {
-            var total = Duration.ZERO
-            service.tasks.forEach { task ->
-                var duration = task.runningTime
-                if (task.status == TaskStatus.RUNNING && task.startTime != null) {
-                    duration = duration.plus(Duration.between(task.startTime, LocalDateTime.now()))
+        private fun selectedTask() =
+            service.tasks.getOrNull(table.selectedRow)
+
+        private fun refresh() {
+            model.setRowCount(0)
+            service.tasks.forEach {
+                val elapsed = if (it.status == TaskStatus.RUNNING && it.startTime != null) {
+                    it.runningTime.plus(java.time.Duration.between(it.startTime, java.time.LocalDateTime.now()))
+                } else {
+                    it.runningTime
                 }
-                total = total.plus(duration)
+
+                model.addRow(arrayOf(
+                    it.name,
+                    it.tag ?: "",
+                    it.status.name,
+                    formatDuration(elapsed),
+                    it.startTime?.let { time -> formatDateTime(time) } ?: "",
+                    it.stopTime?.let { time -> formatDateTime(time) } ?: "",
+                    ""  // Actions column is handled by buttons below the table
             }
             statusLabel.text = "Total Active Time: ${formatDuration(total)}"
         }

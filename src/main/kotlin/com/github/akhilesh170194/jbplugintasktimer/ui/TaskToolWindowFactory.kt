@@ -26,9 +26,10 @@ class TaskToolWindowFactory : ToolWindowFactory {
     }
 
     class TaskToolWindow(private val service: TaskManagerService) {
-        val model = DefaultTableModel(arrayOf("Name", "Status", "Time"), 0)
+        val model = DefaultTableModel(arrayOf("Name", "Tag", "Status", "Time"), 0)
         val table = JTable(model)
         val nameField = JBTextField()
+        val tagField = JBTextField()
         val addButton = JButton("Add")
         val startButton = JButton("Start")
         val pauseButton = JButton("Pause")
@@ -40,6 +41,7 @@ class TaskToolWindowFactory : ToolWindowFactory {
             add(JBScrollPane(table), java.awt.BorderLayout.CENTER)
             val bottom = JPanel()
             bottom.add(nameField)
+            bottom.add(tagField)
             bottom.add(addButton)
             bottom.add(startButton)
             bottom.add(pauseButton)
@@ -52,9 +54,11 @@ class TaskToolWindowFactory : ToolWindowFactory {
             refresh()
             addButton.addActionListener {
                 val name = nameField.text.trim()
+                val tag = tagField.text.trim()
                 if (name.isNotEmpty()) {
-                    service.createTask(name, null, null, null)
+                    service.createTask(name, tag.takeIf { it.isNotEmpty() }, null, null)
                     nameField.text = ""
+                    tagField.text = ""
                     refresh()
                 }
             }
@@ -90,7 +94,7 @@ class TaskToolWindowFactory : ToolWindowFactory {
         private fun refresh() {
             model.setRowCount(0)
             service.tasks.forEach {
-                model.addRow(arrayOf(it.name, it.status.name, formatDuration(it.runningTime)))
+                model.addRow(arrayOf(it.name, it.tag ?: "", it.status.name, formatDuration(it.runningTime)))
             }
         }
 

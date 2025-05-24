@@ -34,7 +34,9 @@ class TaskToolWindowFactory : ToolWindowFactory {
         private val model = object : DefaultTableModel(columns, 0) {
             override fun isCellEditable(row: Int, column: Int) = false
         }
-        private val table = JBTable(model)
+        private val table = JBTable(model).apply {
+            columnModel.getColumn(6).cellRenderer = ActionRenderer()
+        }
         private val statusLabel = JBLabel("Total Active Time: 00:00:00")
         val mainPanel: JPanel
         private val auditColumns = arrayOf("Time", "Task", "Action", "Details")
@@ -44,56 +46,10 @@ class TaskToolWindowFactory : ToolWindowFactory {
         private val auditTable = JBTable(auditModel)
         private val timer = javax.swing.Timer(1000) { refreshRunningTimes() }
 
-        private val refreshTimer = javax.swing.Timer(1000) { refresh() }
+        private val refreshTimer = javax.swing.Timer(1000) { refreshTable() }
 
         init {
-            refresh()
             refreshTimer.start()
-            addButton.addActionListener {
-                val name = nameField.text.trim()
-                val tag = tagField.text.trim()
-                val idleTimeout = idleTimeoutField.text.toLongOrNull()
-                val longTask = longTaskField.text.toLongOrNull()
-
-                if (name.isNotEmpty()) {
-                    service.createTask(name, tag.takeIf { it.isNotEmpty() }, idleTimeout, longTask)
-                    nameField.text = ""
-                    tagField.text = ""
-                    refresh()
-                    val idx = service.tasks.lastIndex
-                    if (idx >= 0) {
-                        table.setRowSelectionInterval(idx, idx)
-                    }
-                }
-            }
-
-            startButton.addActionListener {
-                selectedTask()?.let {
-                    service.startTask(it)
-                    refresh()
-                }
-            }
-
-            pauseButton.addActionListener {
-                selectedTask()?.let {
-                    service.pauseTask(it)
-                    refresh()
-                }
-            }
-
-            resumeButton.addActionListener {
-                selectedTask()?.let {
-                    service.resumeTask(it)
-                    refresh()
-                }
-            }
-
-            stopButton.addActionListener {
-                selectedTask()?.let {
-                    service.stopTask(it)
-                    refresh()
-                }
-            }
 
             val createButton = JButton("+ Create Task")
             createButton.addActionListener { openDialog(null) }
@@ -185,7 +141,7 @@ class TaskToolWindowFactory : ToolWindowFactory {
                     log.details
                 ))
             }
-            statusLabel.text = "Total Active Time: ${formatDuration(total)}"
+            updateTotalTime()
         }
 
         private fun formatDuration(d: Duration): String {

@@ -34,8 +34,8 @@ class TaskDialog(private val task: Task?, private val onOk: (name: String, tag: 
     }
 
     override fun createCenterPanel(): JComponent = panel {
-        row("Task Name:") { nameField(growX) }
-        row("Tag:") { tagField(growX) }
+        row("Task Name:") { nameField() }
+        row("Tag:") { tagField() }
         row { overrideBox() }
         row("Idle Timeout (min):") { idleField() }
         row("Long Task Alert (min):") { longTaskField() }

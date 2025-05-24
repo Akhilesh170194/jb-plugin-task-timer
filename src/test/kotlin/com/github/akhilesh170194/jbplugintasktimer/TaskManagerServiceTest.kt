@@ -4,8 +4,10 @@ import com.github.akhilesh170194.jbplugintasktimer.model.TaskStatus
 import com.github.akhilesh170194.jbplugintasktimer.services.TaskManagerService
 import com.intellij.openapi.components.service
 import com.intellij.testFramework.fixtures.BasePlatformTestCase
+import org.junit.jupiter.api.Test
 
 class TaskManagerServiceTest : BasePlatformTestCase() {
+    @Test
     fun testTaskLifecycle() {
         val service = project.service<TaskManagerService>()
         val task = service.createTask("sample", "tag", null, null)
@@ -32,6 +34,7 @@ class TaskManagerServiceTest : BasePlatformTestCase() {
         assertTrue(task.sessions.all { it.end != null })
     }
 
+    @Test
     fun testExportFunctions() {
         val service = project.service<TaskManagerService>()
         val task = service.createTask("export", null, null, null)
@@ -50,6 +53,7 @@ class TaskManagerServiceTest : BasePlatformTestCase() {
         assertTrue(jsonContent.startsWith("["))
     }
 
+    @Test
     fun testTaskWithOverrides() {
         val service = project.service<TaskManagerService>()
         val idleTimeout = 10L

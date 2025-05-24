@@ -21,7 +21,7 @@ class TaskExporter {
     fun exportToCsv(tasks: List<Task>, file: File) {
         val csvContent = buildString {
             // Header
-            appendLine("Name,Tag,Status,Running Time,Start Time,Stop Time,Sessions")
+            appendLine("Name,Tag,Status,Running Time,Start Time,Stop Time,Pause Count,Resume Count")
 
             // Data rows
             tasks.forEach { task ->
@@ -31,7 +31,9 @@ class TaskExporter {
                 append(formatDuration(task.runningTime)).append(",")
                 append(task.startTime?.let { dateTimeFormatter.format(it) } ?: "").append(",")
                 append(task.stopTime?.let { dateTimeFormatter.format(it) } ?: "").append(",")
-                append(task.sessions.size)
+                append(task.pauseCount)
+                append(',')
+                append(task.resumeCount)
                 appendLine()
             }
         }
@@ -53,7 +55,8 @@ class TaskExporter {
                 append("    \"runningTime\": \"${formatDuration(task.runningTime)}\",\n")
                 append("    \"startTime\": ${if (task.startTime != null) "\"${dateTimeFormatter.format(task.startTime)}\"" else "null"},\n")
                 append("    \"stopTime\": ${if (task.stopTime != null) "\"${dateTimeFormatter.format(task.stopTime)}\"" else "null"},\n")
-                append("    \"sessions\": ${task.sessions.size}\n")
+                append("    \"pauseCount\": ${task.pauseCount},\n")
+                append("    \"resumeCount\": ${task.resumeCount}\n")
                 append("  }")
                 if (index < tasks.size - 1) {
                     append(",")

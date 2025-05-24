@@ -18,7 +18,7 @@ import java.time.LocalDateTime
  */
 @Service(Service.Level.PROJECT)
 @State(name = "TaskManagerService", storages = [Storage("taskManager.xml")])
-class TaskManagerService(private val project: Project) : PersistentStateComponent<TaskManagerService.State> {
+class TaskManagerService(private val project: Project? = null) : PersistentStateComponent<TaskManagerService.State> {
 
     data class State(
         var tasks: MutableList<Task> = mutableListOf(),

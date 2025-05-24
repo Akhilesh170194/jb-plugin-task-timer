@@ -8,6 +8,10 @@ import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.State
 import com.intellij.openapi.components.Storage
 import com.intellij.openapi.project.Project
+import com.intellij.util.xmlb.XmlSerializerUtil
+import java.io.BufferedWriter
+import java.io.File
+import java.nio.file.Path
 import java.time.Duration
 import java.time.LocalDateTime
 
@@ -71,5 +75,51 @@ class TaskManagerService(private val project: Project) : PersistentStateComponen
         }
         task.stopTime = now
         task.status = TaskStatus.STOPPED
+    }
+
+    /**
+     * Export the current list of tasks to a CSV file.
+     */
+    fun exportToCsv(path: Path) {
+        path.toFile().bufferedWriter().use { writer ->
+            writer.appendLine("id,name,tag,status,runningTime,startTime,stopTime,pauseResumeCount")
+            tasks.forEach { task ->
+                writer.appendLine(
+                    listOf(
+                        task.id,
+                        task.name.replace(',', ' '),
+                        task.tag ?: "",
+                        task.status.name,
+                        task.runningTime.toMillis().toString(),
+                        task.startTime?.toString() ?: "",
+                        task.stopTime?.toString() ?: "",
+                        (task.sessions.size - 1).toString()
+                    ).joinToString(",")
+                )
+            }
+        }
+    }
+
+    /**
+     * Export the current list of tasks to a JSON file.
+     */
+    fun exportToJson(path: Path) {
+        path.toFile().bufferedWriter().use { writer ->
+            val escaped = tasks.joinToString(",", prefix = "[", postfix = "]") { task ->
+                buildString {
+                    append("{")
+                    append("\"id\":\"").append(task.id).append("\",")
+                    append("\"name\":\"").append(task.name.replace("\"", "'" )).append("\",")
+                    append("\"tag\":\"").append(task.tag ?: "").append("\",")
+                    append("\"status\":\"").append(task.status.name).append("\",")
+                    append("\"runningTime\":").append(task.runningTime.toMillis()).append(",")
+                    append("\"startTime\":\"").append(task.startTime?.toString() ?: "").append("\",")
+                    append("\"stopTime\":\"").append(task.stopTime?.toString() ?: "").append("\",")
+                    append("\"pauseResumeCount\":").append(task.sessions.size - 1)
+                    append("}")
+                }
+            }
+            writer.append(escaped)
+        }
     }
 }

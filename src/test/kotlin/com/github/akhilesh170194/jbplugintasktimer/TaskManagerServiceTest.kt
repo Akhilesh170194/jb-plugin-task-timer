@@ -103,4 +103,17 @@ class TaskManagerServiceTest {
         assertEquals(auditLogEntry.details, deserializedState.auditLogs[0].details)
     }
 
+    @Test
+    fun testDeleteTask() {
+        val task = service.createTask("toDelete", null, null, null)
+        assertTrue(service.tasks.contains(task))
+
+        service.deleteTask(task)
+
+        assertFalse(service.tasks.contains(task))
+        val log = service.auditLogs.last()
+        assertEquals("Deleted", log.action)
+        assertEquals(task.id, log.taskId)
+    }
+
 }

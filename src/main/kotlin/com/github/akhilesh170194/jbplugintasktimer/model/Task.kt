@@ -1,26 +1,27 @@
 package com.github.akhilesh170194.jbplugintasktimer.model
 
-import com.github.akhilesh170194.jbplugintasktimer.serialization.DurationConverter
-import com.github.akhilesh170194.jbplugintasktimer.serialization.LocalDateTimeConverter
-import com.intellij.util.xmlb.annotations.OptionTag
+import com.github.akhilesh170194.jbplugintasktimer.serialization.DurationSerializer
+import com.github.akhilesh170194.jbplugintasktimer.serialization.LocalDateTimeSerializer
+import kotlinx.serialization.Serializable
 import java.time.Duration
 import java.time.LocalDateTime
 
 /**
  * Represents a single task with time tracking information.
  */
+@Serializable
 data class Task(
     var id: String = java.util.UUID.randomUUID().toString(),
     var name: String = "",
     var tag: String? = null,
-    @OptionTag(converter = LocalDateTimeConverter::class)
+    @Serializable(with = LocalDateTimeSerializer::class)
     var created: LocalDateTime = LocalDateTime.now(),
     var status: TaskStatus = TaskStatus.STOPPED,
-    @OptionTag(converter = DurationConverter::class)
+    @Serializable(with = DurationSerializer::class)
     var runningTime: Duration = Duration.ZERO,
-    @OptionTag(converter = LocalDateTimeConverter::class)
+    @Serializable(with = LocalDateTimeSerializer::class)
     var startTime: LocalDateTime? = null,
-    @OptionTag(converter = LocalDateTimeConverter::class)
+    @Serializable(with = LocalDateTimeSerializer::class)
     var stopTime: LocalDateTime? = null,
     var idleTimeoutMinutes: Long? = null,
     var longTaskMinutes: Long? = null,

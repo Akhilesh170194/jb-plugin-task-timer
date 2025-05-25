@@ -1,12 +1,13 @@
 package com.github.akhilesh170194.jbplugintasktimer.model
 
-import com.github.akhilesh170194.jbplugintasktimer.serialization.LocalDateTimeConverter
-import com.intellij.util.xmlb.annotations.OptionTag
+import com.github.akhilesh170194.jbplugintasktimer.serialization.LocalDateTimeSerializer
+import kotlinx.serialization.Serializable
 import java.time.LocalDateTime
 
+@Serializable
 data class TaskSession(
-    @OptionTag(converter = LocalDateTimeConverter::class)
+    @Serializable(with = LocalDateTimeSerializer::class)
     var start: LocalDateTime = LocalDateTime.now(),
-    @OptionTag(converter = LocalDateTimeConverter::class)
+    @Serializable(with = LocalDateTimeSerializer::class)
     var end: LocalDateTime? = null
 )

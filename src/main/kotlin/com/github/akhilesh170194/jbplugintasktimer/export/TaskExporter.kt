@@ -26,7 +26,7 @@ class TaskExporter(settings: TaskTimerSettings = service()) {
             tasks.forEach { task ->
                 append(escapeForCsv(task.name)).append(",")
                 append(escapeForCsv(task.tag ?: "")).append(",")
-                append(task.status?.name).append(",")
+                append(task.status).append(",")
                 append(formatDuration(task.runningTime)).append(",")
                 append(task.startTime?.let { dateTimeFormatter.format(it) } ?: "").append(",")
                 append(task.stopTime?.let { dateTimeFormatter.format(it) } ?: "")
@@ -47,7 +47,7 @@ class TaskExporter(settings: TaskTimerSettings = service()) {
                 append("  {\n")
                 append("    \"name\": \"${escapeForJson(task.name)}\",\n")
                 append("    \"tag\": ${task.tag?.let { "\"${escapeForJson(it)}\"" } ?: "null"},\n")
-                append("    \"status\": \"${task.status?.name}\",\n")
+                append("    \"status\": \"${task.status}\",\n")
                 append("    \"runningTime\": \"${formatDuration(task.runningTime)}\",\n")
                 append("    \"startTime\": ${if (task.startTime != null) "\"${dateTimeFormatter.format(task.startTime)}\"" else "null"},\n")
                 append("    \"stopTime\": ${if (task.stopTime != null) "\"${dateTimeFormatter.format(task.stopTime)}\"" else "null"}\n")

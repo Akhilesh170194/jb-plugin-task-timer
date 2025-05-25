@@ -23,7 +23,7 @@ class TaskManagerServiceTest {
         val task = service.createTask("sample", "tag", null, null)
         assertEquals("sample", task.name)
         assertEquals("tag", task.tag)
-        assertEquals(TaskStatus.STOPPED, task.status)
+        assertEquals(TaskStatus.NOT_STARTED, task.status)
 
         service.startTask(task)
         assertEquals(TaskStatus.RUNNING, task.status)

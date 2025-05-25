@@ -10,6 +10,7 @@ import com.intellij.openapi.wm.ToolWindow
 import com.intellij.openapi.wm.ToolWindowFactory
 import com.intellij.ui.components.JBLabel
 import com.intellij.ui.components.JBScrollPane
+import com.intellij.ui.components.JBTabbedPane
 import com.intellij.ui.content.ContentFactory
 import com.intellij.ui.table.JBTable
 import java.awt.BorderLayout
@@ -39,13 +40,15 @@ class TaskToolWindowFactory : ToolWindowFactory {
             override fun isCellEditable(row: Int, column: Int) = false
         }
         private val table = JBTable(model).apply {
-            columnModel.getColumn(6).cellRenderer = ActionRenderer()
+            columnModel.getColumn(6).apply {
+                cellRenderer = ActionRenderer()
+            }
         }
         private val statusLabel = JBLabel("Total Active Time: 00:00:00")
         val mainPanel: JPanel
         private val auditColumns = arrayOf("Time", "Task", "Action", "Details")
         private val auditModel = object : DefaultTableModel(auditColumns, 0) {
-            override fun isCellEditable(row: Int, column: Int) = false
+            override fun isCellEditable(row: Int, column: Int) = column == 6 || column == 0
         }
         private val auditTable = JBTable(auditModel)
         private val timer = javax.swing.Timer(1000) { refreshRunningTimes() }
@@ -63,7 +66,7 @@ class TaskToolWindowFactory : ToolWindowFactory {
             val bottom = JPanel(BorderLayout())
             bottom.add(statusLabel, BorderLayout.EAST)
 
-            val tabs = JTabbedPane()
+            val tabs = JBTabbedPane()
             tabs.addTab("Tasks", JBScrollPane(table))
             tabs.addTab("Audit Logs", JBScrollPane(auditTable))
 
@@ -97,7 +100,7 @@ class TaskToolWindowFactory : ToolWindowFactory {
                 model.addRow(
                     arrayOf(
                         task.name,
-                        task.status.name,
+                        task.status,
                         formatDuration(task.runningTime),
                         task.startTime?.format(formatter) ?: "",
                         task.stopTime?.format(formatter) ?: "",

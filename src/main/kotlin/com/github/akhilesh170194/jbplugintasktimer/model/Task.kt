@@ -7,7 +7,7 @@ import java.time.Duration
 import java.time.LocalDateTime
 
 /**
- * Represents a single task with time tracking information.
+ * Represents a single task with time-tracking information.
  */
 @Serializable
 data class Task(
@@ -16,7 +16,7 @@ data class Task(
     var tag: String? = null,
     @Serializable(with = LocalDateTimeSerializer::class)
     var created: LocalDateTime = LocalDateTime.now(),
-    var status: TaskStatus? = null,
+    var status: TaskStatus = TaskStatus.NOT_STARTED,
     @Serializable(with = DurationSerializer::class)
     var runningTime: Duration = Duration.ZERO,
     @Serializable(with = LocalDateTimeSerializer::class)

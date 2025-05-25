@@ -4,10 +4,12 @@ import com.github.akhilesh170194.jbplugintasktimer.model.AuditLogEntry
 import com.github.akhilesh170194.jbplugintasktimer.model.Task
 import com.github.akhilesh170194.jbplugintasktimer.model.TaskSession
 import com.github.akhilesh170194.jbplugintasktimer.model.TaskStatus
+import com.intellij.openapi.components.PersistentStateComponent
 import com.intellij.openapi.components.SerializablePersistentStateComponent
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.State
 import com.intellij.openapi.components.Storage
+import kotlinx.serialization.Serializable
 import java.nio.file.Path
 import java.time.Duration
 import java.time.LocalDateTime
@@ -19,7 +21,7 @@ import java.time.LocalDateTime
 @State(name = "TaskManagerService", storages = [Storage("taskManager.xml")])
 class TaskManagerService : SerializablePersistentStateComponent<TaskManagerService.State>(State()) {
 
-    @kotlinx.serialization.Serializable
+    @Serializable
     data class State(
         var tasks: MutableList<Task> = mutableListOf(),
         var auditLogs: MutableList<AuditLogEntry> = mutableListOf()
@@ -43,7 +45,6 @@ class TaskManagerService : SerializablePersistentStateComponent<TaskManagerServi
             longTaskMinutes = longTask,
             startTime = LocalDateTime.now() // Initialize startTime
         )
-        startTask(task)
         tasks.add(task)
         logChange(task, "Created", "name=$name tag=${tag ?: ""}")
         return task
@@ -122,8 +123,8 @@ class TaskManagerService : SerializablePersistentStateComponent<TaskManagerServi
                     listOf(
                         task.id,
                         task.name.replace(',', ' '),
-                        task.tag?: "",
-                        task.status?.name,
+                        task.tag ?: "",
+                        task.status,
                         task.runningTime.toMillis().toString(),
                         task.startTime?.toString() ?: "",
                         task.stopTime?.toString() ?: ""
@@ -143,8 +144,8 @@ class TaskManagerService : SerializablePersistentStateComponent<TaskManagerServi
                     append("{")
                     append("\"id\":\"").append(task.id).append("\",")
                     append("\"name\":\"").append(task.name.replace("\"", "'")).append("\",")
-                    append("\"tag\":\"").append(task.tag?: "").append("\",")
-                    append("\"status\":\"").append(task.status?.name).append("\",")
+                    append("\"tag\":\"").append(task.tag ?: "").append("\",")
+                    append("\"status\":\"").append(task.status).append("\",")
                     append("\"runningTime\":").append(task.runningTime.toMillis()).append(",")
                     append("\"startTime\":\"").append(task.startTime?.toString() ?: "").append("\",")
                     append("\"stopTime\":\"").append(task.stopTime?.toString() ?: "").append("\"")

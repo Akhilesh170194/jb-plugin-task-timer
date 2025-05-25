@@ -119,6 +119,12 @@ class TaskManagerService : SerializablePersistentStateComponent<TaskManagerServi
         }
     }
 
+    fun deleteTask(task: Task) {
+        if (tasks.remove(task)) {
+            logChange(task, "Deleted", "")
+        }
+    }
+
     /**
      * Export the current list of tasks to a CSV file.
      */

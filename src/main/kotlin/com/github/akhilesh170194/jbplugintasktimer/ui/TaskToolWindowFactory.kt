@@ -41,12 +41,18 @@ class TaskToolWindowFactory : ToolWindowFactory {
         private val model = object : DefaultTableModel(columns, 0) {
             override fun isCellEditable(row: Int, column: Int) = column == 6
         }
-        private val table = JBTable(model).apply {
+        private val table = object : JBTable(model) {
+            override fun isCellEditable(row: Int, column: Int): Boolean = column == 6
+        }.apply {
             columnModel.getColumn(6).apply {
                 val editorRenderer = ActionEditorRenderer()
                 cellRenderer = editorRenderer
                 cellEditor = editorRenderer
             }
+            columnModel.getColumn(0).preferredWidth = 250
+            columnModel.getColumn(5).preferredWidth = 25
+            columnModel.getColumn(1).preferredWidth = 15
+            columnModel.getColumn(2).preferredWidth = 25
         }
         private val statusLabel = JBLabel("Total Active Time: 00:00:00")
         val mainPanel: JPanel
@@ -182,17 +188,30 @@ class TaskToolWindowFactory : ToolWindowFactory {
                 panel.add(pause)
                 panel.add(resume)
 
-                edit.addActionListener { task?.let { openDialog(it) } }
+                edit.addActionListener {
+                    table.cellEditor?.stopCellEditing()
+                    task?.let { openDialog(it) }
+                }
                 delete.addActionListener {
+                    table.cellEditor?.stopCellEditing()
                     task?.let {
                         service.deleteTask(it)
                         refreshTable()
                         refreshAudit()
                     }
                 }
-                stop.addActionListener { task?.let { service.stopTask(it); refreshTable(); refreshAudit() } }
-                pause.addActionListener { task?.let { service.pauseTask(it); refreshTable(); refreshAudit() } }
-                resume.addActionListener { task?.let { service.resumeTask(it); refreshTable(); refreshAudit() } }
+                stop.addActionListener {
+                    table.cellEditor?.stopCellEditing()
+                    task?.let { service.stopTask(it); refreshTable(); refreshAudit() }
+                }
+                pause.addActionListener {
+                    table.cellEditor?.stopCellEditing()
+                    task?.let { service.pauseTask(it); refreshTable(); refreshAudit() }
+                }
+                resume.addActionListener {
+                    table.cellEditor?.stopCellEditing()
+                    task?.let { service.resumeTask(it); refreshTable(); refreshAudit() }
+                }
             }
 
             private fun configure(task: Task) {

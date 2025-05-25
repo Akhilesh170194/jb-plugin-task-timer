@@ -7,6 +7,7 @@ import com.github.akhilesh170194.jbplugintasktimer.services.TaskManagerService
 import com.github.akhilesh170194.jbplugintasktimer.settings.TaskTimerSettings
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.decodeFromString
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 import java.time.LocalDateTime
@@ -114,6 +115,22 @@ class TaskManagerServiceTest {
         val log = service.auditLogs.last()
         assertEquals("Deleted", log.action)
         assertEquals(task.id, log.taskId)
+    }
+    
+    fun testStatePersistsTasksAndAuditLogs() {
+        val service = TaskManagerService()
+        val task = service.createTask("persist", "tag", null, null)
+        service.startTask(task)
+        service.pauseTask(task)
+        service.resumeTask(task)
+        service.stopTask(task)
+
+        val json = Json.encodeToString(service.state)
+        val restored = Json.decodeFromString<TaskManagerService.State>(json)
+
+        assertEquals(1, restored.tasks.size)
+        assertEquals("persist", restored.tasks[0].name)
+        assertTrue(restored.auditLogs.size >= 5)
     }
 
 }

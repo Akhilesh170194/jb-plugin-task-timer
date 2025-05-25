@@ -39,7 +39,7 @@ class TaskToolWindowFactory : ToolWindowFactory {
             "Name", "Status", "Running Time", "Start Time", "Stop Time", "Tag", "Actions"
         )
         private val model = object : DefaultTableModel(columns, 0) {
-            override fun isCellEditable(row: Int, column: Int) = false
+            override fun isCellEditable(row: Int, column: Int) = column == 6
         }
         private val table = object : JBTable(model) {
             override fun isCellEditable(row: Int, column: Int): Boolean = column == 6
@@ -58,7 +58,7 @@ class TaskToolWindowFactory : ToolWindowFactory {
         val mainPanel: JPanel
         private val auditColumns = arrayOf("Time", "Task", "Action", "Details")
         private val auditModel = object : DefaultTableModel(auditColumns, 0) {
-            override fun isCellEditable(row: Int, column: Int) = column == 6 || column == 0
+            override fun isCellEditable(row: Int, column: Int) = false
         }
         private val auditTable = JBTable(auditModel)
         private val timer = javax.swing.Timer(1000) { refreshRunningTimes() }

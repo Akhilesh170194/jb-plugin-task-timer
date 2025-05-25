@@ -1,20 +1,25 @@
 package com.github.akhilesh170194.jbplugintasktimer
 
+import com.github.akhilesh170194.jbplugintasktimer.export.TaskExporter
+import com.github.akhilesh170194.jbplugintasktimer.model.AuditLogEntry
 import com.github.akhilesh170194.jbplugintasktimer.model.TaskStatus
 import com.github.akhilesh170194.jbplugintasktimer.services.TaskManagerService
-import com.intellij.openapi.project.Project
+import com.github.akhilesh170194.jbplugintasktimer.settings.TaskTimerSettings
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
-import kotlinx.serialization.json.Json
+import java.time.LocalDateTime
 
 class TaskManagerServiceTest {
 
-    private fun createService(): TaskManagerService {
-        return TaskManagerService(null)
-    }
+    private val service: TaskManagerService = TaskManagerService()
+    private val exporter: TaskExporter = TaskExporter(TaskTimerSettings().apply {
+        state.timeZoneId = "UTC"
+    })
+
     @Test
     fun testTaskLifecycle() {
-        val service = createService()
         val task = service.createTask("sample", "tag", null, null)
         assertEquals("sample", task.name)
         assertEquals("tag", task.tag)
@@ -41,7 +46,6 @@ class TaskManagerServiceTest {
 
     @Test
     fun testExportFunctions() {
-        val service = createService()
         val task = service.createTask("export", null, null, null)
         service.startTask(task)
         service.stopTask(task)
@@ -49,7 +53,6 @@ class TaskManagerServiceTest {
         val csv = java.nio.file.Files.createTempFile("tasks", ".csv").toFile()
         val json = java.nio.file.Files.createTempFile("tasks", ".json").toFile()
 
-        val exporter = com.github.akhilesh170194.jbplugintasktimer.export.TaskExporter()
         exporter.exportToCsv(service.tasks, csv)
         exporter.exportToJson(service.tasks, json)
 
@@ -60,7 +63,6 @@ class TaskManagerServiceTest {
 
     @Test
     fun testTaskWithOverrides() {
-        val service = createService()
         val idleTimeout = 10L
         val longTask = 60L
 
@@ -73,17 +75,32 @@ class TaskManagerServiceTest {
     }
 
     @Test
-    fun testStateSerialization() {
-        val service = createService()
-        val task = service.createTask("serialize", null, null, null)
-        service.startTask(task)
-        service.stopTask(task)
+    fun testSerializationAndDeserializationOfTaskManagerServiceState() {
 
-        val json = Json { encodeDefaults = true }
-        val encoded = json.encodeToString(TaskManagerService.State.serializer(), service.state)
-        val decoded = json.decodeFromString(TaskManagerService.State.serializer(), encoded)
+        val now: LocalDateTime = LocalDateTime.now();
+        val auditLogEntry = AuditLogEntry(
+            time = now,
+            taskId = "123",
+            action = "Created",
+            details = "Task created successfully"
+        )
 
-        assertEquals(service.state.tasks.size, decoded.tasks.size)
-        assertEquals(service.state.auditLogs.size, decoded.auditLogs.size)
+        val state = TaskManagerService.State(
+            auditLogs = mutableListOf(auditLogEntry)
+        )
+
+        // Serialize the state to JSON
+        val json = Json.encodeToString(state)
+
+        // Deserialize the JSON back to State
+        val deserializedState = Json.decodeFromString<TaskManagerService.State>(json)
+
+        // Verify the deserialized state
+        assertEquals(1, deserializedState.auditLogs.size)
+        assertEquals(now, deserializedState.auditLogs[0].time)
+        assertEquals(auditLogEntry.taskId, deserializedState.auditLogs[0].taskId)
+        assertEquals(auditLogEntry.action, deserializedState.auditLogs[0].action)
+        assertEquals(auditLogEntry.details, deserializedState.auditLogs[0].details)
     }
+
 }

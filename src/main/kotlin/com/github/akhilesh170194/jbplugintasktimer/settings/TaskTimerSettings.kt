@@ -11,20 +11,11 @@ import java.time.ZoneId
  */
 @Service
 @State(name = "TaskTimerSettings", storages = [Storage("taskTimerSettings.xml")])
-class TaskTimerSettings : SerializablePersistentStateComponent<TaskTimerSettings.State> {
+class TaskTimerSettings : SerializablePersistentStateComponent<TaskTimerSettings.State>(State()) {
 
-    @kotlinx.serialization.Serializable
     data class State(
         var idleTimeoutMinutes: Long = 5,
         var longTaskMinutes: Long = 30,
         var timeZoneId: String = ZoneId.systemDefault().id
     )
-
-    private var myState = State()
-
-    override fun getState(): State = myState
-
-    override fun loadState(state: State) {
-        myState = state
-    }
 }

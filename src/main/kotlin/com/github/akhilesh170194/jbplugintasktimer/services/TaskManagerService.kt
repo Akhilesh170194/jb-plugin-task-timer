@@ -8,7 +8,6 @@ import com.intellij.openapi.components.SerializablePersistentStateComponent
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.State
 import com.intellij.openapi.components.Storage
-import com.intellij.openapi.project.Project
 import java.nio.file.Path
 import java.time.Duration
 import java.time.LocalDateTime
@@ -18,7 +17,7 @@ import java.time.LocalDateTime
  */
 @Service(Service.Level.PROJECT)
 @State(name = "TaskManagerService", storages = [Storage("taskManager.xml")])
-class TaskManagerService(private val project: Project? = null) : SerializablePersistentStateComponent<TaskManagerService.State> {
+class TaskManagerService : SerializablePersistentStateComponent<TaskManagerService.State>(State()) {
 
     @kotlinx.serialization.Serializable
     data class State(
@@ -26,26 +25,25 @@ class TaskManagerService(private val project: Project? = null) : SerializablePer
         var auditLogs: MutableList<AuditLogEntry> = mutableListOf()
     )
 
-    private var myState = State()
-
-    override fun getState(): State = myState
-
-    override fun loadState(state: State) {
-        myState = state
-    }
-
     val tasks: MutableList<Task>
-        get() = myState.tasks
+        get() = state.tasks
 
     val auditLogs: MutableList<AuditLogEntry>
-        get() = myState.auditLogs
+        get() = state.auditLogs
 
     private fun logChange(task: Task, action: String, details: String) {
         auditLogs.add(AuditLogEntry(taskId = task.id, action = action, details = details))
     }
 
     fun createTask(name: String, tag: String?, idle: Long?, longTask: Long?): Task {
-        val task = Task(name = name, tag = tag, idleTimeoutMinutes = idle, longTaskMinutes = longTask)
+        val task = Task(
+            name = name,
+            tag = tag,
+            idleTimeoutMinutes = idle,
+            longTaskMinutes = longTask,
+            startTime = LocalDateTime.now() // Initialize startTime
+        )
+        startTask(task)
         tasks.add(task)
         logChange(task, "Created", "name=$name tag=${tag ?: ""}")
         return task
@@ -124,8 +122,8 @@ class TaskManagerService(private val project: Project? = null) : SerializablePer
                     listOf(
                         task.id,
                         task.name.replace(',', ' '),
-                        task.tag ?: "",
-                        task.status.name,
+                        task.tag?: "",
+                        task.status?.name,
                         task.runningTime.toMillis().toString(),
                         task.startTime?.toString() ?: "",
                         task.stopTime?.toString() ?: ""
@@ -145,8 +143,8 @@ class TaskManagerService(private val project: Project? = null) : SerializablePer
                     append("{")
                     append("\"id\":\"").append(task.id).append("\",")
                     append("\"name\":\"").append(task.name.replace("\"", "'")).append("\",")
-                    append("\"tag\":\"").append(task.tag ?: "").append("\",")
-                    append("\"status\":\"").append(task.status.name).append("\",")
+                    append("\"tag\":\"").append(task.tag?: "").append("\",")
+                    append("\"status\":\"").append(task.status?.name).append("\",")
                     append("\"runningTime\":").append(task.runningTime.toMillis()).append(",")
                     append("\"startTime\":\"").append(task.startTime?.toString() ?: "").append("\",")
                     append("\"stopTime\":\"").append(task.stopTime?.toString() ?: "").append("\"")

@@ -16,7 +16,7 @@ data class Task(
     var tag: String? = null,
     @Serializable(with = LocalDateTimeSerializer::class)
     var created: LocalDateTime = LocalDateTime.now(),
-    var status: TaskStatus = TaskStatus.STOPPED,
+    var status: TaskStatus? = null,
     @Serializable(with = DurationSerializer::class)
     var runningTime: Duration = Duration.ZERO,
     @Serializable(with = LocalDateTimeSerializer::class)

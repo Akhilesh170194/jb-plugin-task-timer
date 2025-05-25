@@ -4,10 +4,13 @@
 [![Version](https://img.shields.io/jetbrains/plugin/v/MARKETPLACE_ID.svg)](https://plugins.jetbrains.com/plugin/MARKETPLACE_ID)
 [![Downloads](https://img.shields.io/jetbrains/plugin/d/MARKETPLACE_ID.svg)](https://plugins.jetbrains.com/plugin/MARKETPLACE_ID)
 
-Task Timer helps developers track how much time is spent on specific tasks directly from within the IDE. The plugin adds a tool window for managing running tasks and stores the data using IntelliJ persistence APIs.
+Task Timer helps developers track how much time is spent on specific tasks directly from within the IDE. The plugin adds
+a tool window for managing running tasks and stores the data using IntelliJ persistence APIs.
 
 <!-- Plugin description -->
-Task Timer helps you track the time spent on your development tasks directly in the IDE. Create tasks, start or pause timers, and maintain a full history of sessions for each project. Data is stored via IntelliJ persistent state components and can be exported for reporting.
+Task Timer helps you track the time spent on your development tasks directly in the IDE. Create tasks, start or pause
+timers, and maintain a full history of sessions for each project. Data is stored via IntelliJ persistent state
+components and can be exported for reporting.
 <!-- Plugin description end -->
 
 ## Features
@@ -21,20 +24,26 @@ Task Timer helps you track the time spent on your development tasks directly in 
 ## Installation
 
 ### Using the IDE built-in plugin system
+
 1. Open **Settings/Preferences** &rarr; **Plugins** &rarr; **Marketplace**
 2. Search for `jb-plugin-task-timer`
 3. Click **Install**
 
 ### Using JetBrains Marketplace
+
 1. Visit [JetBrains Marketplace](https://plugins.jetbrains.com/plugin/MARKETPLACE_ID)
 2. Click **Install to ...** if your IDE is running, or download the latest release and install it from disk
 
 ### Manual download
-Download the latest release from [GitHub Releases](https://github.com/Akhilesh170194/jb-plugin-task-timer/releases/latest) and install it via **Settings/Preferences** &rarr; **Plugins** &rarr; **⚙️** &rarr; **Install plugin from disk...**
+
+Download the latest release
+from [GitHub Releases](https://github.com/Akhilesh170194/jb-plugin-task-timer/releases/latest) and install it via *
+*Settings/Preferences** &rarr; **Plugins** &rarr; **⚙️** &rarr; **Install plugin from disk...**
 
 ## Usage
 
-Open the **Task Timer** tool window from the bottom tool window bar. Create a new task and start or pause the timer as you work. A status bar widget shows the total time of all running tasks.
+Open the **Task Timer** tool window from the bottom tool window bar. Create a new task and start or pause the timer as
+you work. A status bar widget shows the total time of all running tasks.
 
 ## Building from Source
 

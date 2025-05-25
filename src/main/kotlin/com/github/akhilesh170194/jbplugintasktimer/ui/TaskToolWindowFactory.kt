@@ -22,7 +22,9 @@ import javax.swing.JPanel
 import javax.swing.JTabbedPane
 import javax.swing.JTable
 import javax.swing.table.DefaultTableModel
+import javax.swing.table.TableCellEditor
 import javax.swing.table.TableCellRenderer
+import javax.swing.AbstractCellEditor
 
 class TaskToolWindowFactory : ToolWindowFactory {
     override fun createToolWindowContent(project: Project, toolWindow: ToolWindow) {
@@ -41,7 +43,9 @@ class TaskToolWindowFactory : ToolWindowFactory {
         }
         private val table = JBTable(model).apply {
             columnModel.getColumn(6).apply {
-                cellRenderer = ActionRenderer()
+                val editorRenderer = ActionEditorRenderer()
+                cellRenderer = editorRenderer
+                cellEditor = editorRenderer
             }
         }
         private val statusLabel = JBLabel("Total Active Time: 00:00:00")
@@ -162,39 +166,54 @@ class TaskToolWindowFactory : ToolWindowFactory {
             return String.format("%02d:%02d:%02d", h, m, s)
         }
 
-        inner class ActionRenderer : TableCellRenderer {
-            override fun getTableCellRendererComponent(
-                table: JTable?, value: Any?, isSelected: Boolean, hasFocus: Boolean, row: Int, column: Int
-            ): java.awt.Component {
-                val task = value as Task
-                val panel = JPanel()
-                panel.isOpaque = false
-                val edit = JButton(com.intellij.icons.AllIcons.Actions.Edit)
-                edit.toolTipText = "Edit Task"
-                edit.addActionListener { openDialog(task) }
-                val delete = JButton(com.intellij.icons.AllIcons.General.Remove)
-                delete.toolTipText = "Delete Task"
-                delete.addActionListener {
-                    service.tasks.remove(task)
-                    refreshTable()
-                    refreshAudit()
-                }
-                val stop = JButton(com.intellij.icons.AllIcons.Actions.Suspend)
-                stop.toolTipText = "Stop Task"
-                stop.addActionListener { service.stopTask(task); refreshTable(); refreshAudit() }
-                val pause = JButton(com.intellij.icons.AllIcons.Actions.Pause)
-                pause.toolTipText = "Pause Task"
-                pause.addActionListener { service.pauseTask(task); refreshTable(); refreshAudit() }
-                val resume = JButton(com.intellij.icons.AllIcons.Actions.Resume)
-                resume.toolTipText = "Resume Task"
-                resume.addActionListener { service.resumeTask(task); refreshTable(); refreshAudit() }
+        inner class ActionEditorRenderer : AbstractCellEditor(), TableCellEditor, TableCellRenderer {
+            private val panel = JPanel().apply { isOpaque = false }
+            private val edit = JButton(com.intellij.icons.AllIcons.Actions.Edit).apply { toolTipText = "Edit Task" }
+            private val delete = JButton(com.intellij.icons.AllIcons.General.Remove).apply { toolTipText = "Delete Task" }
+            private val stop = JButton(com.intellij.icons.AllIcons.Actions.Suspend).apply { toolTipText = "Stop Task" }
+            private val pause = JButton(com.intellij.icons.AllIcons.Actions.Pause).apply { toolTipText = "Pause Task" }
+            private val resume = JButton(com.intellij.icons.AllIcons.Actions.Resume).apply { toolTipText = "Resume Task" }
+            private var task: Task? = null
+
+            init {
                 panel.add(edit)
                 panel.add(delete)
                 panel.add(stop)
                 panel.add(pause)
                 panel.add(resume)
+
+                edit.addActionListener { task?.let { openDialog(it) } }
+                delete.addActionListener {
+                    task?.let {
+                        service.deleteTask(it)
+                        refreshTable()
+                        refreshAudit()
+                    }
+                }
+                stop.addActionListener { task?.let { service.stopTask(it); refreshTable(); refreshAudit() } }
+                pause.addActionListener { task?.let { service.pauseTask(it); refreshTable(); refreshAudit() } }
+                resume.addActionListener { task?.let { service.resumeTask(it); refreshTable(); refreshAudit() } }
+            }
+
+            private fun configure(task: Task) {
+                this.task = task
+            }
+
+            override fun getTableCellRendererComponent(
+                table: JTable?, value: Any?, isSelected: Boolean, hasFocus: Boolean, row: Int, column: Int
+            ): java.awt.Component {
+                configure(value as Task)
                 return panel
             }
+
+            override fun getTableCellEditorComponent(
+                table: JTable?, value: Any?, isSelected: Boolean, row: Int, column: Int
+            ): java.awt.Component {
+                configure(value as Task)
+                return panel
+            }
+
+            override fun getCellEditorValue(): Any? = task
         }
     }
 }

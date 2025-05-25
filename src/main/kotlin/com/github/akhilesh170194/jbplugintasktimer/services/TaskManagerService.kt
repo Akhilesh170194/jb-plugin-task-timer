@@ -35,7 +35,7 @@ class TaskManagerService : SerializablePersistentStateComponent<TaskManagerServi
 
     private fun logChange(task: Task, action: String, details: String) {
         auditLogs.add(AuditLogEntry(taskId = task.id, action = action, details = details))
-        incrementModificationCount()
+//        incrementModificationCount()
     }
 
     fun deleteTask(task: Task) {

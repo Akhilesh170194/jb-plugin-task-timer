@@ -4,7 +4,7 @@ import com.github.akhilesh170194.jbplugintasktimer.model.AuditLogEntry
 import com.github.akhilesh170194.jbplugintasktimer.model.Task
 import com.github.akhilesh170194.jbplugintasktimer.model.TaskSession
 import com.github.akhilesh170194.jbplugintasktimer.model.TaskStatus
-import com.intellij.openapi.components.PersistentStateComponent
+import com.intellij.openapi.components.SerializablePersistentStateComponent
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.State
 import com.intellij.openapi.components.Storage
@@ -18,8 +18,9 @@ import java.time.LocalDateTime
  */
 @Service(Service.Level.PROJECT)
 @State(name = "TaskManagerService", storages = [Storage("taskManager.xml")])
-class TaskManagerService(private val project: Project? = null) : PersistentStateComponent<TaskManagerService.State> {
+class TaskManagerService(private val project: Project? = null) : SerializablePersistentStateComponent<TaskManagerService.State> {
 
+    @kotlinx.serialization.Serializable
     data class State(
         var tasks: MutableList<Task> = mutableListOf(),
         var auditLogs: MutableList<AuditLogEntry> = mutableListOf()

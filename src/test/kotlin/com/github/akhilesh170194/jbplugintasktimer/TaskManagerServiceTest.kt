@@ -5,6 +5,7 @@ import com.github.akhilesh170194.jbplugintasktimer.services.TaskManagerService
 import com.intellij.openapi.project.Project
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
+import kotlinx.serialization.json.Json
 
 class TaskManagerServiceTest {
 
@@ -69,5 +70,20 @@ class TaskManagerServiceTest {
         assertEquals("test", task.tag)
         assertEquals(idleTimeout, task.idleTimeoutMinutes)
         assertEquals(longTask, task.longTaskMinutes)
+    }
+
+    @Test
+    fun testStateSerialization() {
+        val service = createService()
+        val task = service.createTask("serialize", null, null, null)
+        service.startTask(task)
+        service.stopTask(task)
+
+        val json = Json { encodeDefaults = true }
+        val encoded = json.encodeToString(TaskManagerService.State.serializer(), service.state)
+        val decoded = json.decodeFromString(TaskManagerService.State.serializer(), encoded)
+
+        assertEquals(service.state.tasks.size, decoded.tasks.size)
+        assertEquals(service.state.auditLogs.size, decoded.auditLogs.size)
     }
 }
